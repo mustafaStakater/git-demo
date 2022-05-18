@@ -1,27 +1,27 @@
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/serviceaccount.yaml
+# Source: external-secrets/charts/external-secrets/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: release-name-external-secrets
   namespace: "default"
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/rbac.yaml
+# Source: external-secrets/charts/external-secrets/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: release-name-external-secrets-controller
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups:
@@ -30,6 +30,7 @@ rules:
     - "secretstores"
     - "clustersecretstores"
     - "externalsecrets"
+    - "clusterexternalsecrets"
     verbs:
     - "get"
     - "list"
@@ -40,6 +41,15 @@ rules:
     - "externalsecrets"
     - "externalsecrets/status"
     - "externalsecrets/finalizers"
+    - "secretstores"
+    - "secretstores/status"
+    - "secretstores/finalizers"
+    - "clustersecretstores"
+    - "clustersecretstores/status"
+    - "clustersecretstores/finalizers"
+    - "clusterexternalsecrets"
+    - "clusterexternalsecrets/status"
+    - "clusterexternalsecrets/finalizers"
     verbs:
     - "update"
     - "patch"
@@ -47,6 +57,7 @@ rules:
     - ""
     resources:
     - "serviceaccounts"
+    - "namespaces"
     verbs:
     - "get"
     - "list"
@@ -84,17 +95,24 @@ rules:
     verbs:
     - "create"
     - "patch"
+  - apiGroups:
+    - "external-secrets.io"
+    resources:
+    - "externalsecrets"
+    verbs:
+    - "create"
+    - "update"
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/rbac.yaml
+# Source: external-secrets/charts/external-secrets/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: release-name-external-secrets-view
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
     rbac.authorization.k8s.io/aggregate-to-view: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
@@ -111,16 +129,16 @@ rules:
       - "watch"
       - "list"
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/rbac.yaml
+# Source: external-secrets/charts/external-secrets/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: release-name-external-secrets-edit
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
@@ -138,16 +156,16 @@ rules:
       - "patch"
       - "update"
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/rbac.yaml
+# Source: external-secrets/charts/external-secrets/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: release-name-external-secrets-controller
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -158,17 +176,17 @@ subjects:
     namespace: "default"
     kind: ServiceAccount
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/rbac.yaml
+# Source: external-secrets/charts/external-secrets/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: release-name-external-secrets-leaderelection
   namespace: "default"
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups:
@@ -197,17 +215,17 @@ rules:
     - "update"
     - "patch"
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/rbac.yaml
+# Source: external-secrets/charts/external-secrets/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: release-name-external-secrets-leaderelection
   namespace: "default"
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -218,43 +236,36 @@ subjects:
     name: release-name-external-secrets
     namespace: "default"
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/service.yaml
+# Source: external-secrets/charts/external-secrets/templates/servicemonitor.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: release-name-external-secrets-metrics
+  namespace: "default"
   labels:
-    helm.sh/chart: external-secrets-0.3.14
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    prometheus.io/path: "/metrics"
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
 spec:
   type: ClusterIP
   ports:
     - port: 8080
-      targetPort: prometheus
-      name: prometheus
       protocol: TCP
+      name: metrics
   selector:
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/deployment.yaml
+# Source: external-secrets/charts/external-secrets/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: release-name-external-secrets
   namespace: "default"
   labels:
-    helm.sh/chart: external-secrets-0.3.14
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: "v0.3.11"
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -271,33 +282,36 @@ spec:
       serviceAccountName: release-name-external-secrets
       containers:
         - name: external-secrets
-          image: "ghcr.io/external-secrets/external-secrets:v0.3.11"
+          image: "ghcr.io/external-secrets/external-secrets:v0.5.3"
           imagePullPolicy: IfNotPresent
           args:
           - --concurrent=1
           ports:
             - containerPort: 8080
-              name: prometheus
               protocol: TCP
+              name: metrics
 ---
-# Source: stakater-external-secrets/charts/external-secrets/templates/servicemonitor.yaml
+# Source: external-secrets/charts/external-secrets/templates/servicemonitor.yaml
 apiVersion: "monitoring.coreos.com/v1"
 kind: ServiceMonitor
 metadata:
-  name: release-name-external-secrets
   labels:
+    helm.sh/chart: external-secrets-0.5.3
     app.kubernetes.io/name: external-secrets
-    helm.sh/chart: external-secrets-0.3.14
     app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "v0.5.3"
     app.kubernetes.io/managed-by: Helm
+  name: release-name-external-secrets-metrics
+  namespace: "default"
 spec:
-  endpoints:
-  - interval: 
-    port: prometheus
-    path: /metrics
-  namespaceSelector:
-    matchNames:
-    - default
   selector:
     matchLabels:
       app.kubernetes.io/name: external-secrets
+      app.kubernetes.io/instance: release-name
+  namespaceSelector:
+    matchNames:
+    - "default"
+  endpoints:
+  - port: metrics
+    interval: 30s
+    scrapeTimeout: 25s
