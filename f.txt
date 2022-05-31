@@ -1,0 +1,169 @@
+# Source: stakater-pipeline-charts/charts/pipeline-charts/templates/pipeline.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: stakater-main-pr-v1
+  namespace: default
+spec:
+  params:
+    - name: repoName 
+      type: string
+    - name: prnumberBranch 
+      type: string
+    - name: gitorganization
+      type: string
+    - name: gitcdrepo
+      type: string
+    - name: team
+      type: string
+    - name: clusterName
+      type: string
+    - name: gitrevision
+      type: string
+    - name: gitrepositoryurl
+      type: string
+    - name: image_registry_url
+      type: string
+    - name: namespace
+      type: string
+    - name: prnumber
+      type: string
+    - name: repoPath
+      type: string
+    - name: author
+      type: string
+    - name: helm_registry
+      type: string
+    - name: environment
+      type: string
+  workspaces:
+    - name: source
+  tasks:
+    - name: git-clone
+      taskRef:
+        - name: git-clone
+          kind: ClusterTask
+      params:
+      - name: url
+        value: $(params.gitrepositoryurl)
+      - name: revision
+        value: $(params.gitrevision)
+      - name: depth
+        value: 0      
+      workspaces:
+        - name: output
+          workspace: source
+    - name: stakater-create-git-tag-v1
+      taskRef:
+        - name: stakater-create-git-tag-v1
+          kind: ClusterTask
+      params:
+      - name: prnumber
+        value: $(params.prnumber)
+      - name: gitrevision
+        value: $(params.gitrevision)      
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - git-clone
+    - name: stakater-buildah-v1
+      taskRef:
+        - name: stakater-buildah-v1
+          kind: ClusterTask
+      params:
+      - name: IMAGE
+        value: $(params.image_registry_url):$(tasks.stakater-create-git-tag-v1.results.GIT_TAG)
+      - name: TLSVERIFY
+        value: false
+      - name: FORMAT
+        value: docker      
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - stakater-create-git-tag-v1
+    - name: stakater-comment-on-github-pr-v1
+      taskRef:
+        - name: stakater-comment-on-github-pr-v1
+          kind: ClusterTask
+      params:
+      - name: prnumber
+        value: $(params.prnumber)
+      - name: gitrepositoryurl
+        value: $(params.gitrepositoryurl)
+      - name: IMAGE
+        value: $(params.image_registry_url):$(tasks.stakater-create-git-tag-v1.results.GIT_TAG)      
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - stakater-buildah-v1
+    - name: stakater-helm-push-v1
+      taskRef:
+        - name: stakater-helm-push-v1
+          kind: ClusterTask
+      params:
+      - name: prnumber
+        value: $(params.prnumber)
+      - name: repoPath
+        value: $(params.repoPath)
+      - name: gitrevision
+        value: $(params.gitrevision)
+      - name: registry
+        value: $(params.helm_registry)
+      - name: semVer
+        value: $(tasks.stakater-create-git-tag-v1.results.GIT_TAG)      
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - stakater-comment-on-github-pr-v1
+    - name: stakater-update-cd-repo-v1
+      taskRef:
+        - name: stakater-update-cd-repo-v1
+          kind: ClusterTask
+      params:
+      - name: prnumber
+        value: $(params.prnumber)
+      - name: environment
+        value: $(params.environment)
+      - name: repoPath
+        value: $(params.repoPath)
+      - name: gitrevision
+        value: $(params.gitrevision)
+      - name: gitorganization
+        value: $(params.gitorganization)
+      - name: gitcdrepo
+        value: $(params.gitcdrepo)
+      - name: clusterName
+        value: $(params.clusterName)
+      - name: team
+        value: $(params.team)
+      - name: namespace
+        value: $(params.namespace)
+      - name: IMAGE_TAG
+        value: $(tasks.stakater-create-git-tag-v1.results.GIT_TAG)
+      - name: IMAGE_NAME
+        value: $(params.image_registry_url)      
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - stakater-helm-push-v1
+    - name: stakater-push-main-tag-v1
+      taskRef:
+        - name: stakater-push-main-tag-v1
+          kind: ClusterTask
+      params:
+      - name: prnumber
+        value: $(params.prnumber)
+      - name: gitrevision
+        value: $(params.gitrevision)
+      - name: IMAGE_TAG
+        value: $(tasks.stakater-create-git-tag-v1.results.GIT_TAG)      
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - stakater-update-cd-repo-v1
